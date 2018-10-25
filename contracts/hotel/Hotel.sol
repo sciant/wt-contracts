@@ -11,7 +11,7 @@ contract Hotel is AbstractHotel {
 
   bytes32 public contractType = bytes32("hotel");
 
-  enum BookingRequestStatus {PENDING,ACCEPTED,REJECTED}
+  enum BookingRequestStatus {PENDING,ACCEPTED,REJECTED,CANCELED}
 
   struct BookingRequest{
     address sender;
@@ -83,6 +83,17 @@ contract Hotel is AbstractHotel {
     emit BookingRejected(bookingRequests[id].sender, id);
   }
 
+  function cancelBooking(uint256 id) public {
+    require(bookingRequests[id].sender == msg.sender && (bookingRequests[id].status == BookingRequestStatus.ACCEPTED || bookingRequests[id].status == BookingRequestStatus.PENDING));
+    for(uint i=0;i<bookingRequests[id].cancellationTo.length;i++){
+      if(now >= bookingRequests[id].cancellationFrom[i] && now <= bookingRequests[id].cancellationTo[i]){
+        // Refund user's money
+        bookingRequests[id].sender.transfer(bookingRequests[id].cancellationAmount[i]*bookingRequests[id].total/100);
+        bookingRequests[id].status = BookingRequestStatus.CANCELED;
+      }
+    }
+  }
+
   /**
    * @dev Adds booking request.
    * @param info encrypted information about the booking
@@ -90,9 +101,8 @@ contract Hotel is AbstractHotel {
    * @param cancellationTo list containing end dates of cancellation policies
    * @param cancellationAmount list containing amounts of cancellation policies
    */
-  function book(string info, uint256[] cancellationFrom, uint256[] cancellationTo, uint8[] cancellationAmount) public payable {
+  function book(string info, uint256[] cancellationFrom, uint256[] cancellationTo, uint8[] cancellationAmount, string hashedDepartureDate) public payable {
     bookingRequests.push(BookingRequest(msg.sender, info, cancellationFrom, cancellationTo, cancellationAmount, msg.value, BookingRequestStatus.PENDING));
-    manager.transfer(msg.value);
     emit newBookingRequest(msg.sender, info, cancellationFrom, cancellationTo, cancellationAmount, msg.value, bookingRequests.length-1);
   }
 
