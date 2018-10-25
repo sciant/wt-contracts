@@ -96,14 +96,14 @@ contract Hotel is AbstractHotel {
 
   /**
    * @dev Adds booking request.
-   * @param info encrypted information about the booking
+   * @param encrypedData encrypted information about the booking
    * @param cancellationFrom list containing start dates of cancellation policies
    * @param cancellationTo list containing end dates of cancellation policies
    * @param cancellationAmount list containing amounts of cancellation policies
    */
-  function book(string info, uint256[] cancellationFrom, uint256[] cancellationTo, uint8[] cancellationAmount, string hashedDepartureDate) public payable {
-    bookingRequests.push(BookingRequest(msg.sender, info, cancellationFrom, cancellationTo, cancellationAmount, msg.value, BookingRequestStatus.PENDING));
-    emit newBookingRequest(msg.sender, info, cancellationFrom, cancellationTo, cancellationAmount, msg.value, bookingRequests.length-1);
+  function book(string encrypedData, uint256[] cancellationFrom, uint256[] cancellationTo, uint8[] cancellationAmount) public payable {
+    bookingRequests.push(BookingRequest(msg.sender, encrypedData, cancellationFrom, cancellationTo, cancellationAmount, msg.value, BookingRequestStatus.PENDING));
+    emit newBookingRequest(msg.sender, encrypedData, cancellationFrom, cancellationTo, cancellationAmount, msg.value, bookingRequests.length-1);
   }
 
 }
